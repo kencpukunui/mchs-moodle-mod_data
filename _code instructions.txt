@@ -1,0 +1,79 @@
+/**Created by Ken Chang 06/07/2018 for Pukunui Technology**/
+/**Ticket number TXE-274165**/
+
+==================================================================================================
+15062018 - change priya's code - in this path /home/mcshs2/public_html/mod/data/locallib.php
+Reprogram the Shedule task function mod_data_completedjobs()
+Move the record from Maintenance to Archived without add one more new record to Archived database.
+==================================================================================================
+==================================================================================================
+26062018 - BUG FIX in this path /home/mcshs2/public_html/mod/data/edit.php
+$a->requestor = $requestor; // $requestor->name = null, $requestor = the field we want to pass
+$a->title = $title; // $title->name = null, $title = the field we want to pass
+$a->description = $desc; // $description->text = null, $description = the field we want to pass
+Because $desc contained <p></p> inside the field, so ran a function from Dom and in the sql commends(Function below)
+DELIMITER //
+Drop function IF EXISTS `strip_tags2` //
+CREATE FUNCTION `strip_tags2`(in_str longtext) RETURNS longtext
+
+BEGIN
+DECLARE iStart, iEnd, iLength INT;
+declare sStart TEXT;
+SET sStart = LEFT(in_str,4); 
+IF sStart = "O:8:" THEN
+BEGIN
+SET in_str = substring(in_str, locate('<p>',in_str)+3);
+SET in_str = REVERSE(in_str);
+SET in_str = substring(in_str, locate('>p/<',in_str)+4);
+SET in_str = REVERSE(in_str);
+END;
+END IF;
+
+WHILE locate('<', in_str) > 0 AND locate('>', in_str, locate('<', in_str)) > 0
+DO
+BEGIN
+SET iStart = locate('<', in_str), iEnd = locate('>', in_str, locate('<', in_str));
+SET iLength = (iEnd - iStart) + 1;
+IF iLength > 0 THEN
+BEGIN
+SET in_str = insert(in_str, iStart, iLength, '');
+END;
+END IF;
+END;
+END WHILE;
+
+RETURN in_str;
+END //
+
+DELIMITER ;
+
+26062018 - Zip up the plugin in the mod folder named ken_backup3_data26062018(done_emailtest_archivedtest).zip
+==================================================================================================
+==================================================================================================
+27062018 - change priya's code - in this path /home/mcshs2/public_html/mod/data/edit.php
+Line 248 - Line 268
+Please use "(BUG FIX)Let Admin user can receive email after they ticked one/multiple checkbox" as your search resource
+if (strpos($emaillist, "##")) { //for multiple checkbox choice
+$userarray = explode("##", $emaillist);
+$JP = 0;
+}
+else{ //for one checkbox choose
+$userarray = $emaillist;
+$JP = 1;
+}
+if($JP == 0){
+$emailarray = array();
+foreach ($userarray as $key => $dat) {
+$emailaddress = $DB->get_field('data_email', 'email', array('name' => $dat));
+if (!in_array($emailaddress, $emailarray)) {
+$emailarray[] = $emailaddress;
+}
+}
+} else if($JP == 1){
+$emailarray = array();
+$emailaddress = $DB->get_field('data_email', 'email', array('name' => $userarray));
+$emailarray[0] = $emailaddress;
+}
+
+27062018 - Zip up the plugin in the mod folder named ken_backup4_data27062018(done_multiple_mail_choice).zip
+==================================================================================================
